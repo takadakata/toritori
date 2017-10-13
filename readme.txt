@@ -34,3 +34,9 @@ geckodriver
 のリンク先を辿ることができる．
 5. スタックが空になるまで2～4を繰り返す．
 
+#公開物
+・readme.txt : このファイル
+・url_crawl.py : Webサイトアクセス時のpcap収集ツール
+・urllist.txt : 収集するWebサイトのURLリスト
+・crawled.tsv : 収集結果
+・pcapフォルダ : 収集した通信データ（urllist.txtで収集したデータ）
