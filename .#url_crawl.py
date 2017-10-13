@@ -1,1 +1,0 @@
-takada@takada-virtual-machine.10617:1507856262

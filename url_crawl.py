@@ -8,6 +8,9 @@ from bs4 import BeautifulSoup
 from time import sleep
 import re
 import sys
+import os
+sys.path.append("./")
+import find_obfuscation
 
 class Crawler():
 
@@ -35,13 +38,16 @@ class Crawler():
         driver.get(url)
         html = driver.page_source
 
-        if find_obfuscation(html) > 0:
-            
-            
-        sleep(60)
-        
-        driver.quit()
-        proc.kill()  #tshark終了
+        if is_malicious(html) is True:
+            html = ""
+            proc.kill()
+            driver.quit()
+        else:
+            sleep(60)
+            driver.quit()
+            proc.kill()  #tshark終了
+
+        os.remove("sample"+str(self.pcap_id)+".pcap")
         display.stop()
         self.pcap_id += 1
         return html
@@ -77,6 +83,13 @@ class Crawler():
         with open(fname, "w") as f:
             for i in range(self.pcap_id):
                 f.write("sample{0}.pcap\t{1}\n".format(i, self.crawled[i]))
+                
+
+
+def is_malicious(text):
+    if find_obfuscation(text) > 0:
+        return True
+    return False
 
 
 if __name__ == '__main__':
