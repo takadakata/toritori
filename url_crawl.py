@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import WebDriverException
 from pyvirtualdisplay import Display
 from subprocess import Popen
 from bs4 import BeautifulSoup
@@ -18,7 +18,7 @@ class Crawler():
         self.max_depth = max_depth
         self.pcap_id = 0
         self.crawled = []
-
+        self.mal_cnt = 0
         
     def get_pcap_html(self, url):
         print("sample{0} : {1}".format(self.pcap_id, url))
@@ -34,22 +34,26 @@ class Crawler():
 
         #driver.set_page_load_timeout(30)
         #driver.set_script_timeout(30)
-        
-        driver.get(url)
-        html = driver.page_source
 
-        if is_malicious(html) is True:
-            html = ""
-            proc.kill()
-            driver.quit()
+        html = ""
+        try:
+            driver.get(url)
+        except WebDriverException:
+            print("\033[93mWevDriverException\033[0m")
             os.remove("sample"+str(self.pcap_id)+".pcap")
         else:
-            sleep(60)
+            html = driver.page_source
+            if is_malicious(html) is True:
+                os.remove("sample"+str(self.pcap_id)+".pcap")
+                print("\033[91mmalicious\033[0m")
+                self.mal_cnt += 1 
+            else:
+                sleep(60)
+                self.pcap_id += 1
+        finally:
             driver.quit()
             proc.kill()  #tshark終了
-
-        display.stop()
-        self.pcap_id += 1
+            display.stop()
         return html
 
 
@@ -85,6 +89,10 @@ class Crawler():
                 f.write("sample{0}.pcap\t{1}\n".format(i, self.crawled[i]))
 
 
+    def get_mal_cnt(self):
+        return self.mal_cnt
+
+    
 def is_malicious(text):
     if find_obfuscation.find_obfuscation(text) > 0:
         return True
@@ -97,8 +105,10 @@ if __name__ == '__main__':
     with open("urllist.txt", "r") as f:
         text = f.read()
     urllist = text.rstrip("\n").split("\n")
-
+    
     crawler = Crawler(max_depth)
     for url in urllist:
         crawler.crawl_web(url)
     crawler.create_crawled_list("crawled.tsv")
+    mal_cnt = crawler.get_mal_cnt()
+    print("mal_cnt: {0}".format(mal_cnt))
