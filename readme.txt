@@ -40,3 +40,7 @@ geckodriver
 ・urllist.txt : 収集するWebサイトのURLリスト
 ・crawled.tsv : 収集結果
 ・pcapフォルダ : 収集した通信データ（urllist.txtで収集したデータ）
+
+
+#作成
+高田　長井
